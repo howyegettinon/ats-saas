@@ -91,6 +91,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.2 }}
+              className=""
             >
               <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
                 Transform Your Resume with <br />
@@ -104,6 +105,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
+              className=""
             >
               <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
                 Beat applicant tracking systems and land 3x more interviews using our GPT-5 powered analysis engine. 
