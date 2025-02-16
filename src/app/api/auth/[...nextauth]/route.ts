@@ -1,30 +1,22 @@
-import NextAuth from 'next-auth'
-import GitHub from 'next-auth/providers/github'
-import Google from 'next-auth/providers/google'
+import NextAuth from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 
-export const {
-  handlers: { GET, POST },
-  auth
-} = NextAuth({
+export default NextAuth({
   providers: [
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID,
-      clientSecret: process.env.AUTH_GITHUB_SECRET
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET
-    })
+    // Add more providers here
   ],
-  secret: process.env.AUTH_SECRET,
-  cookies: {
-    sessionToken: {
-      name: '__Secure-authjs.session-token',
-      options: {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax'
-      }
-    }
-  }
-})
+  pages: {
+    signIn: '/auth/signin',
+  },
+  callbacks: {
+    async session({ session, token }) {
+      // Add custom session properties here if needed
+      return session;
+    },
+  },
+  secret: process.env.NEXTAUTH_SECRET,
+});
