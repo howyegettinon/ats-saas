@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "scripts": {
         "dev": "next dev",
-        "build": "bun install axios react-hook-form nodemailer aws-sdk && bun add @upstash/redis && bun install && next build",
+        "build": "bun add @prisma/client @next-auth/prisma-adapter && bun add prisma && bun install axios react-hook-form nodemailer aws-sdk && bun add @upstash/redis && bun install && next build",
         "start": "next start",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev"
