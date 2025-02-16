@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import EmailProvider from 'next-auth/providers/email';
 
 const options = {
   providers: [
@@ -7,10 +8,24 @@ const options = {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
-    // Add more providers here
+    EmailProvider({
+      server: {
+        host: process.env.EMAIL_SERVER_HOST,
+        port: process.env.EMAIL_SERVER_PORT,
+        auth: {
+          user: process.env.EMAIL_SERVER_USER,
+          pass: process.env.EMAIL_SERVER_PASSWORD,
+        },
+      },
+      from: process.env.EMAIL_FROM,
+    }),
   ],
   pages: {
-    signIn: '/login', // Ensure this path matches the actual route
+    signIn: '/login',
+    signOut: '/logout',
+    error: '/login',
+    verifyRequest: '/verify-request',
+    newUser: '/signup',
   },
   callbacks: {
     async session({ session, token }) {
