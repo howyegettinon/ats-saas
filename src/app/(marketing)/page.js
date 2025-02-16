@@ -1,6 +1,6 @@
-import SparklesHero from '@/components/hero/SparklesHero'
-import { ChevronRight, Check, Star } from 'lucide-react'
-import { ClientMotion } from '@/components/motion/ClientMotion'
+import SparklesHero from '@/components/hero/SparklesHero';
+import { ChevronRight, Check, Star } from 'lucide-react';
+import { ClientMotion } from '@/components/motion/ClientMotion';
 
 export default function Home() {
   const features = [
@@ -199,5 +199,5 @@ export default function Home() {
         </div>
       </section>
     </div>
-  )
+  );
 }
