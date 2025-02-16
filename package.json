@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "scripts": {
         "dev": "next dev",
-        "build": "next build",
+        "build": "bun install axios react-hook-form nodemailer aws-sdk && bun add @upstash/redis && bun install && next build",
         "start": "next start",
         "prisma:generate": "prisma generate",
         "prisma:migrate": "prisma migrate dev"
@@ -29,7 +29,8 @@
         "nodemailer": "^6.10.0",
         "aws-sdk": "^2.1692.0",
         "@upstash/redis": "^1.34.4",
-        "react-hook-form": "^7.34.0"
+        "react-hook-form": "^7.34.0",
+        "axios": "^1.3.0"
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.10",
