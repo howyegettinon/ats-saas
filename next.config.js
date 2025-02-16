@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    appDir: true,
+  },
   output: 'standalone',
   headers: () => [
     {
@@ -12,4 +15,4 @@ const nextConfig = {
   ],
 }
 
-module.exports = nextConfig
+module.exports = nextConfig;
