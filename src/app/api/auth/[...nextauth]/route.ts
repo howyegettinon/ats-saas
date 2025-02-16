@@ -10,7 +10,7 @@ const options = {
     // Add more providers here
   ],
   pages: {
-    signIn: '/auth/signin',
+    signIn: '/login', // Ensure this path matches the actual route
   },
   callbacks: {
     async session({ session, token }) {
