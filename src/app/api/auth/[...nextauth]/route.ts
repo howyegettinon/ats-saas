@@ -41,6 +41,10 @@ const options = {
       console.log('SignIn callback', user, account, profile, email, credentials); // Debugging
       return true; // Return true to allow the sign in
     },
+    async redirect({ url, baseUrl }) {
+      console.log('Redirect callback', url, baseUrl); // Debugging
+      return url.startsWith(baseUrl) ? url : baseUrl;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
