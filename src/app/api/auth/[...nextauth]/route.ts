@@ -34,8 +34,12 @@ const options = {
   adapter: PrismaAdapter(prisma),
   callbacks: {
     async session({ session, token }) {
-      // Add custom session properties here if needed
+      console.log('Session callback', session, token); // Debugging
       return session;
+    },
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log('SignIn callback', user, account, profile, email, credentials); // Debugging
+      return true; // Return true to allow the sign in
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
