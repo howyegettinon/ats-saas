@@ -1,4 +1,7 @@
-// ... (keep the imports the same)
+'use client'
+
+import { useState } from 'react' // Add this import
+import { ChevronRight } from 'lucide-react'
 
 export default function AnalyzerForm() {
   const [resume, setResume] = useState('')
