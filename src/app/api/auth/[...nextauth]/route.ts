@@ -29,24 +29,36 @@ const options = {
     signOut: '/logout',
     error: '/login',
     verifyRequest: '/verify-request',
-    newUser: '/signup',
+    newUser: null, // Remove this line or set to null to prevent redirect to signup
   },
   adapter: PrismaAdapter(prisma),
   callbacks: {
     async session({ session, token }) {
-      console.log('Session callback', session, token); // Debugging
+      if (session?.user) {
+        session.user.id = token.sub;
+      }
       return session;
     },
-    async signIn({ user, account, profile, email, credentials }) {
-      console.log('SignIn callback', user, account, profile, email, credentials); // Debugging
-      return true; // Return true to allow the sign in
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google") {
+        return true;
+      }
+      return true;
     },
     async redirect({ url, baseUrl }) {
-      console.log('Redirect callback', url, baseUrl); // Debugging
-      return url.startsWith(baseUrl) ? url : baseUrl;
+      // After successful sign in, redirect to dashboard
+      if (url === `${baseUrl}/signup`) {
+        return `${baseUrl}/dashboard`;
+      }
+      // For other cases, ensure we stay within our domain
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
+      return `${baseUrl}/dashboard`;
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
 
 const authHandler = (req, res) => NextAuth(req, res, options);
