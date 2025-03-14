@@ -29,29 +29,32 @@ const options = {
     signOut: '/logout',
     error: '/login',
     verifyRequest: '/verify-request',
-    newUser: null, // Remove this line or set to null to prevent redirect to signup
   },
   adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: 'jwt', // Explicitly set the strategy
+  },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      if (session?.user) {
-        session.user.id = token.sub;
+      if (session?.user && token) {  // Add null check for token
+        session.user.id = token.id;  // Use token.id instead of token.sub
       }
       return session;
     },
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
-        return true;
-      }
       return true;
     },
     async redirect({ url, baseUrl }) {
-      // After successful sign in, redirect to dashboard
-      if (url === `${baseUrl}/signup`) {
-        return `${baseUrl}/dashboard`;
-      }
-      // For other cases, ensure we stay within our domain
       if (url.startsWith(baseUrl)) {
+        if (url.includes('/signup')) {
+          return `${baseUrl}/dashboard`;
+        }
         return url;
       }
       return `${baseUrl}/dashboard`;
@@ -61,6 +64,6 @@ const options = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-const authHandler = (req, res) => NextAuth(req, res, options);
+const handler = NextAuth(options);
 
-export { authHandler as GET, authHandler as POST };
+export { handler as GET, handler as POST };
