@@ -1,17 +1,26 @@
-import '../styles/globals.css'; // Must be relative path
-import dynamic from "next/dynamic";
+import { Providers } from './providers'
+import { Inter } from 'next/font/google'
+import './globals.css'
 
-// Dynamically import ClientLayout to disable SSR for this component
-const ClientLayout = dynamic(() => import("../components/ClientLayout"), { ssr: false });
+const inter = Inter({ subsets: ['latin'] })
 
-export default function RootLayout({ children }) {
+export const metadata = {
+  title: 'ATS SaaS Application',
+  description: 'Applicant Tracking System SaaS Platform',
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <body className="min-h-screen">
-        <ClientLayout>
+    <html lang="en">
+      <body className={inter.className}>
+        <Providers>
           {children}
-        </ClientLayout>
+        </Providers>
       </body>
     </html>
-  );
+  )
 }
