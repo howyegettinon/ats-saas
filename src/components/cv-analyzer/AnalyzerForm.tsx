@@ -1,26 +1,72 @@
-import OpenAI from 'openai'
+'use client'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+import { useState } from 'react'
+import { ChevronRight } from 'lucide-react'
 
-export async function analyzeResume(resumeText: string) {
-  try {
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4-turbo",
-      messages: [{
-        role: "system",
-        content: "Analyze this resume for Applicant Tracking System compatibility. Provide a structured analysis with these sections:\n1. Overall Score (0-100)\n2. Keyword Analysis\n3. Formatting Issues\n4. Content Gaps\n5. Specific Improvements"
-      }, {
-        role: "user",
-        content: resumeText.substring(0, 3000)
-      }],
-      temperature: 0.7
-    })
+export default function AnalyzerForm() {
+  const [resume, setResume] = useState('')
+  const [analysis, setAnalysis] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-    return completion.choices[0].message.content
-  } catch (error: any) {
-    console.error('OpenAI Error:', error)
-    throw new Error('Resume analysis failed: ' + error.message)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resume.trim()) return
+    
+    setLoading(true)
+    try {
+      const response = await fetch('/api/analyze-cv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resume }),
+      })
+
+      if (!response.ok) throw new Error('Analysis failed')
+      
+      const data = await response.json()
+      setAnalysis(data.result)
+    } catch (error: any) {
+      console.error('Error:', error)
+      setAnalysis('Error: ' + error.message)
+    } finally {
+      setLoading(false)
+    }
   }
+
+  return (
+    <div className="w-full max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100">
+          <textarea
+            value={resume}
+            onChange={(e) => setResume(e.target.value)}
+            className="w-full h-96 bg-white/50 rounded-xl p-6 border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+            placeholder="Paste your resume here..."
+            disabled={loading}
+          />
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-6 w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all flex items-center justify-center gap-2"
+          >
+            {loading ? 'Analyzing...' : 'Analyze Resume'}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </form>
+
+      {analysis && (
+        <div className="mt-8 bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+            Analysis Results
+          </h2>
+          <div className="prose prose-blue max-w-none">
+            <pre className="whitespace-pre-wrap text-gray-700 bg-gray-50 rounded-xl p-6">
+              {analysis}
+            </pre>
+          </div>
+        </div>
+      )}
+    </div>
+  )
 }
