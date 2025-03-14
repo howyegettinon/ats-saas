@@ -8,7 +8,7 @@ const openai = new OpenAI({
 async function analyzeResume(resumeText: string) {
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-4",  // Changed from gpt-4-turbo to gpt-4
+      model: "gpt-4",
       messages: [{
         role: "system",
         content: "Analyze this resume for Applicant Tracking System compatibility. Provide a structured analysis with these sections:\n1. Overall Score (0-100)\n2. Keyword Analysis\n3. Formatting Issues\n4. Content Gaps\n5. Specific Improvements"
