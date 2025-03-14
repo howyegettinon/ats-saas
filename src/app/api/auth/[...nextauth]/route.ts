@@ -1,4 +1,5 @@
 import NextAuth from 'next-auth';
+import type { NextAuthOptions, SessionStrategy } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
@@ -6,11 +7,11 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-const options = {
+const options: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
     EmailProvider({
       server: {
@@ -32,7 +33,7 @@ const options = {
   },
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: 'jwt', // Explicitly set the strategy
+    strategy: 'jwt' as SessionStrategy,  // Type assertion here
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -42,8 +43,8 @@ const options = {
       return token;
     },
     async session({ session, token }) {
-      if (session?.user && token) {  // Add null check for token
-        session.user.id = token.id;  // Use token.id instead of token.sub
+      if (session?.user && token) {
+        session.user.id = token.id;
       }
       return session;
     },
@@ -60,7 +61,7 @@ const options = {
       return `${baseUrl}/dashboard`;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET!,
   debug: process.env.NODE_ENV === 'development',
 };
 
