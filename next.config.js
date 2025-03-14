@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  typescript: {
+    // !! WARN !!
+    // If you want to handle TypeScript errors during build
+    ignoreBuildErrors: false,
+  },
   headers: () => [
     {
       source: '/(.*)',
