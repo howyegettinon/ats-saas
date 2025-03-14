@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react' // Add this import
-import { ChevronRight } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronRight, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 export default function AnalyzerForm() {
   const [resume, setResume] = useState('')
@@ -40,6 +41,16 @@ export default function AnalyzerForm() {
 
   return (
     <div className="w-full max-w-4xl mx-auto">
+      <div className="mb-6">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Dashboard
+        </Link>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100">
           <textarea
