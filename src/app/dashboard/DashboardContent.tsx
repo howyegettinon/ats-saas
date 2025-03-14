@@ -1,85 +1,63 @@
 'use client'
 
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useClientSession } from '@/hooks/useClientSession'
-import { signOut } from 'next-auth/react'
-import Image from 'next/image'
+import { useEffect } from 'react'
 
-export default function DashboardContent() {
-  const { data: session } = useClientSession()
+export default function LoginPage() {
+  const router = useRouter()
+  const { data: session, status } = useClientSession()
+
+  useEffect(() => {
+    if (session) {
+      router.push('/dashboard')
+    }
+  }, [session, router])
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50/30">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-indigo-50">
-      {/* Navigation */}
-      <nav className="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold text-white">ATS SaaS</h1>
-            </div>
-            
-            {/* User Menu */}
-            <div className="flex items-center">
-              <div className="flex items-center space-x-4">
-                {session?.user?.image && (
-                  <div className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-md">
-                    <Image
-                      src={session.user.image}
-                      alt={session.user.name || 'User'}
-                      fill
-                      className="object-cover"
-                      unoptimized // Add this to fix Google image loading issues
-                    />
-                  </div>
-                )}
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-white">
-                    {session?.user?.name}
-                  </span>
-                  <span className="text-xs text-blue-100">
-                    {session?.user?.email}
-                  </span>
-                </div>
-                <button
-                  onClick={() => signOut()}
-                  className="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-500 bg-opacity-20 hover:bg-opacity-30 rounded-lg transition-all duration-150"
-                >
-                  Sign out
-                </button>
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50/30">
+      <div className="max-w-md w-full space-y-8 p-10 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl">
+        <div>
+          <h2 className="mt-6 text-center text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Sign in to your CVGenius account
+          </p>
         </div>
-      </nav>
+        <div className="mt-8 space-y-6">
+          {/* Google Sign In Button */}
+          <button
+            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
+            className="w-full flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5"
+          >
+            <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/>
+            </svg>
+            Continue with Google
+          </button>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
-          {/* Welcome Section */}
-          <div className="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-600">
-            <h2 className="text-2xl font-bold text-white">
-              Welcome back, {session?.user?.name}!
-            </h2>
-            <p className="mt-1 text-blue-100">
-              Your workspace is ready
-            </p>
-          </div>
-
-          {/* Account Details */}
-          <div className="px-8 py-6">
-            <h3 className="text-lg font-semibold text-gray-900">Account Details</h3>
-            <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="bg-gray-50 rounded-xl p-4">
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="mt-1 text-sm text-gray-900">{session?.user?.email}</dd>
-              </div>
-              <div className="bg-gray-50 rounded-xl p-4">
-                <dt className="text-sm font-medium text-gray-500">Name</dt>
-                <dd className="mt-1 text-sm text-gray-900">{session?.user?.name}</dd>
-              </div>
-            </dl>
-          </div>
+          {/* Email Sign In Button */}
+          <button
+            onClick={() => signIn('email', { callbackUrl: '/dashboard' })}
+            className="w-full flex items-center justify-center px-6 py-3 text-gray-600 hover:text-blue-600 bg-white rounded-lg border border-gray-200 hover:border-blue-600 transition-all duration-200 transform hover:-translate-y-0.5"
+          >
+            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            Continue with Email
+          </button>
         </div>
-      </main>
+      </div>
     </div>
   )
 }
