@@ -2,9 +2,12 @@
 const nextConfig = {
   output: 'standalone',
   typescript: {
-    // !! WARN !!
-    // If you want to handle TypeScript errors during build
     ignoreBuildErrors: false,
+  },
+  webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Ensure correct module resolution
+    config.resolve.modules = ['node_modules', '.']
+    return config
   },
   headers: () => [
     {
@@ -17,4 +20,4 @@ const nextConfig = {
   ],
 }
 
-module.exports = nextConfig;
+module.exports = nextConfig
