@@ -1,26 +1,21 @@
-import { useSession, signOut } from "next-auth/react";
+import dynamic from 'next/dynamic';
 
-const ClientSession = () => {
-  const { data: session, status } = useSession();
-  const loading = status === "loading";
+const ClientSession = dynamic(() => import('./ClientSession'), { ssr: false });
 
-  if (loading) return null;
-
+const ClientLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <>
-      {session ? (
-        <>
-          <li><a href="/dashboard">Dashboard</a></li>
-          <li><button onClick={() => signOut()}>Sign Out</button></li>
-        </>
-      ) : (
-        <>
-          <li><a href="/login">Login</a></li>
-          <li><a href="/signup">Sign Up</a></li>
-        </>
-      )}
-    </>
+    <div>
+      <header>
+        <nav>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <ClientSession />
+          </ul>
+        </nav>
+      </header>
+      <main>{children}</main>
+    </div>
   );
 };
 
-export default ClientSession;
+export default ClientLayout;
