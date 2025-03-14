@@ -3,11 +3,9 @@ import type { NextAuthOptions, SessionStrategy } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma'; // Updated to use the singleton prisma instance
 
-const prisma = new PrismaClient();
-
-const options: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.AUTH_GOOGLE_ID!,
@@ -33,7 +31,7 @@ const options: NextAuthOptions = {
   },
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: 'jwt' as SessionStrategy,  // Type assertion here
+    strategy: 'jwt' as SessionStrategy,
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -65,6 +63,6 @@ const options: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-const handler = NextAuth(options);
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
