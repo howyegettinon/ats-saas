@@ -6,6 +6,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronRight } from 'lucide-react'
 
+const navigation = [
+  { name: 'Overview', href: '/dashboard' },
+  { name: 'CV Analyzer', href: '/dashboard/cv-analyzer' },
+  { name: 'Cover Letter', href: '/dashboard/cover-letter' },
+]
+
 export default function DashboardContent() {
   const { data: session } = useClientSession()
 
@@ -21,6 +27,19 @@ export default function DashboardContent() {
               </Link>
             </div>
             
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-600 hover:text-blue-600 transition-colors"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+
             {/* User Menu */}
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
