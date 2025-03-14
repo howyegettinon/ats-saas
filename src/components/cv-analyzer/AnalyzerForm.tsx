@@ -1,18 +1,17 @@
-'use client'
-
-import { useState } from 'react'
-import { ChevronRight } from 'lucide-react'
+// ... (keep the imports the same)
 
 export default function AnalyzerForm() {
   const [resume, setResume] = useState('')
   const [analysis, setAnalysis] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!resume.trim()) return
     
     setLoading(true)
+    setError(null)
     try {
       const response = await fetch('/api/analyze-cv', {
         method: 'POST',
@@ -20,13 +19,17 @@ export default function AnalyzerForm() {
         body: JSON.stringify({ resume }),
       })
 
-      if (!response.ok) throw new Error('Analysis failed')
-      
       const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Analysis failed')
+      }
+      
       setAnalysis(data.result)
     } catch (error: any) {
       console.error('Error:', error)
-      setAnalysis('Error: ' + error.message)
+      setError(error.message)
+      setAnalysis(null)
     } finally {
       setLoading(false)
     }
@@ -54,6 +57,13 @@ export default function AnalyzerForm() {
           </button>
         </div>
       </form>
+
+      {error && (
+        <div className="mt-8 bg-red-50 text-red-600 rounded-2xl p-6 border border-red-200">
+          <h2 className="text-lg font-semibold mb-2">Error</h2>
+          <p>{error}</p>
+        </div>
+      )}
 
       {analysis && (
         <div className="mt-8 bg-white/80 backdrop-blur-md rounded-2xl p-6 shadow-xl border border-gray-100">
