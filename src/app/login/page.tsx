@@ -1,40 +1,35 @@
-'use client';
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { getCsrfToken, signIn } from 'next-auth/react';
-import { GoogleIcon } from '@/components/icons/GoogleIcon';
+'use client'
+
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useClientSession } from '@/hooks/useClientSession'
+import { useEffect } from 'react'
 
 export default function LoginPage() {
-  const { register, handleSubmit } = useForm();
-  const [csrfToken, setCsrfToken] = useState<string>('');
+  const router = useRouter()
+  const { data: session, status } = useClientSession()
 
   useEffect(() => {
-    getCsrfToken().then(token => setCsrfToken(token || ''));
-  }, []);
+    if (session) {
+      router.push('/dashboard')
+    }
+  }, [session, router])
 
-  const onSubmit = async (data) => {
-    await signIn('email', { email: data.email, csrfToken });
-  };
+  if (status === 'loading') {
+    return <div>Loading...</div>
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50/30">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <input name="csrfToken" type="hidden" defaultValue={csrfToken} />
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-gray-700">Email</label>
-          <input {...register('email')} id="email" type="email" className="mt-1 block w-full border-gray-300 rounded-md shadow-sm" />
-        </div>
-        <button type="submit" className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          Sign In with Email
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-md">
+        <h1 className="text-2xl font-bold mb-4">Login</h1>
+        <button
+          onClick={() => signIn(undefined, { callbackUrl: '/dashboard' })}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Sign In
         </button>
-        <div className="mt-4 text-center">
-          <div className="text-gray-500 mb-3">or</div>
-          <button type="button" onClick={() => signIn('google')} className="w-full py-2 px-4 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-            <GoogleIcon className="h-5 w-5" />
-            Sign In with Google
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
-  );
+  )
 }
