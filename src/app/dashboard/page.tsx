@@ -1,8 +1,10 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import ProtectedRoute from '@/components/ProtectedRoute'
+import DashboardContent from './DashboardContent'
 
-export default async function Dashboard() {
-  const session = await auth();
-  if (!session) return redirect("/login");
-  return <div>Protected Content</div>;
+export default function DashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
+  )
 }
