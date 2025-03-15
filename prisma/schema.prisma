@@ -38,16 +38,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?       @unique
   emailVerified DateTime?
   image         String?
-  usageCredits  Int      @default(10) // This was missing
   accounts      Account[]
   sessions      Session[]
-  analyses      Analysis[]
-  coverLetters  CoverLetter[]
+  analyses      Analysis[]    // Added for CV analysis history
+  coverLetters  CoverLetter[] // Added for cover letter history
+  usageCredits  Int          @default(10) // Added for usage tracking
+  lastReset     DateTime      @default(now()) // Added for credit reset tracking
 }
 
 model VerificationToken {
@@ -60,21 +61,23 @@ model VerificationToken {
 
 model Analysis {
   id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String
   resume    String   @db.Text
   result    String   @db.Text
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model CoverLetter {
-  id              String   @id @default(cuid())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  jobDescription  String   @db.Text
-  resume          String   @db.Text
-  result          String   @db.Text
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id @default(cuid())
+  userId         String
+  jobDescription String   @db.Text
+  resume         String   @db.Text
+  result         String   @db.Text
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
