@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useClientSession } from '@/hooks/useClientSession'
+import { useSession } from 'next-auth/react'
 import { signOut } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,11 +11,16 @@ const navigation = [
   { name: 'Overview', href: '/dashboard' },
   { name: 'CV Analyzer', href: '/dashboard/cv-analyzer' },
   { name: 'Cover Letter', href: '/dashboard/cover-letter' },
+  { name: 'History', href: '/dashboard/history' }, // Added History link
 ]
 
 export default function DashboardContent() {
-  const { data: session } = useClientSession()
+  const { data: session, status } = useSession()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const currentTime = new Date().toLocaleString('en-US', {
+    timeZone: 'UTC',
+    hour12: false,
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
@@ -52,7 +57,9 @@ export default function DashboardContent() {
                       alt={session.user.name || 'User'}
                       fill
                       className="object-cover"
-                      unoptimized
+                      sizes="(max-width: 40px) 100vw, 40px"
+                      priority
+                      unoptimized // Added to help with Google profile images
                     />
                   </div>
                 )}
@@ -113,7 +120,9 @@ export default function DashboardContent() {
                         alt={session.user.name || 'User'}
                         fill
                         className="object-cover"
-                        unoptimized
+                        sizes="(max-width: 32px) 100vw, 32px"
+                        priority
+                        unoptimized // Added to help with Google profile images
                       />
                     </div>
                     <div className="flex flex-col">
@@ -148,7 +157,7 @@ export default function DashboardContent() {
               Welcome back, {session?.user?.name}!
             </h2>
             <p className="mt-1 text-blue-100">
-              Your workspace is ready
+              Your workspace is ready • Last login: {currentTime}
             </p>
           </div>
 
@@ -167,6 +176,45 @@ export default function DashboardContent() {
                 <dd className="mt-1 text-sm text-gray-900">{session?.user?.name}</dd>
               </div>
             </dl>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="px-8 py-6 border-t border-gray-100">
+            <h3 className="text-lg font-semibold text-gray-900 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Quick Actions
+            </h3>
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <Link
+                href="/dashboard/cv-analyzer"
+                className="group relative bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-all"
+              >
+                <h4 className="text-base font-semibold text-gray-900">CV Analysis</h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  Get instant feedback on your CV
+                </p>
+                <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </Link>
+              <Link
+                href="/dashboard/cover-letter"
+                className="group relative bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-all"
+              >
+                <h4 className="text-base font-semibold text-gray-900">Cover Letter</h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  Generate tailored cover letters
+                </p>
+                <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </Link>
+              <Link
+                href="/dashboard/history"
+                className="group relative bg-white/50 backdrop-blur-sm rounded-xl p-6 border border-gray-100 hover:shadow-lg transition-all"
+              >
+                <h4 className="text-base font-semibold text-gray-900">History</h4>
+                <p className="mt-1 text-sm text-gray-500">
+                  View your past analyses
+                </p>
+                <ChevronRight className="absolute right-6 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </Link>
+            </div>
           </div>
         </div>
       </main>
