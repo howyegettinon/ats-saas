@@ -1,70 +1,91 @@
-import NextAuth from 'next-auth';
-import type { NextAuthOptions, SessionStrategy } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
-import EmailProvider from 'next-auth/providers/email';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { prisma } from '@/lib/prisma'
+import { authOptions } from '@/lib/auth' // Updated import path
 
-const prisma = new PrismaClient();
+export async function GET(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-const options: NextAuthOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-    }),
-    EmailProvider({
-      server: {
-        host: process.env.EMAIL_SERVER_HOST,
-        port: process.env.EMAIL_SERVER_PORT,
-        auth: {
-          user: process.env.EMAIL_SERVER_USER,
-          pass: process.env.EMAIL_SERVER_PASSWORD,
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        analyses: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        },
+        coverLetters: {
+          orderBy: { createdAt: 'desc' },
+          take: 10,
         },
       },
-      from: process.env.EMAIL_FROM,
-    }),
-  ],
-  pages: {
-    signIn: '/login',
-    signOut: '/logout',
-    error: '/login',
-    verifyRequest: '/verify-request',
-  },
-  adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: 'jwt' as SessionStrategy,  // Type assertion here
-  },
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session?.user && token) {
-        session.user.id = token.id;
-      }
-      return session;
-    },
-    async signIn({ user, account, profile }) {
-      return true;
-    },
-    async redirect({ url, baseUrl }) {
-      if (url.startsWith(baseUrl)) {
-        if (url.includes('/signup')) {
-          return `${baseUrl}/dashboard`;
-        }
-        return url;
-      }
-      return `${baseUrl}/dashboard`;
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET!,
-  debug: process.env.NODE_ENV === 'development',
-};
+    })
 
-const handler = NextAuth(options);
+    return NextResponse.json({
+      analyses: user?.analyses || [],
+      coverLetters: user?.coverLetters || [],
+    })
 
-export { handler as GET, handler as POST };
+  } catch (error: any) {
+    console.error('History error:', error)
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
+  }
+}
+
+export async function POST(req: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const { type, data } = body
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
+
+    if (type === 'analysis') {
+      const analysis = await prisma.analysis.create({
+        data: {
+          userId: user.id,
+          resume: data.resume,
+          result: data.result,
+        },
+      })
+      return NextResponse.json(analysis)
+    }
+
+    if (type === 'coverLetter') {
+      const coverLetter = await prisma.coverLetter.create({
+        data: {
+          userId: user.id,
+          jobDescription: data.jobDescription,
+          resume: data.resume,
+          result: data.result,
+        },
+      })
+      return NextResponse.json(coverLetter)
+    }
+
+    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+
+  } catch (error: any) {
+    console.error('Save history error:', error)
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    )
+  }
+}
