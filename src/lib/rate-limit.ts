@@ -6,7 +6,11 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
-export const ratelimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, '10 s'),
-});
+export const rateLimit = (config: { interval: number; uniqueTokenPerInterval: number }) => {
+  return new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(10, '10 s'),
+    analytics: true,
+    prefix: '@upstash/ratelimit',
+  });
+};
