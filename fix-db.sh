@@ -2,15 +2,18 @@
 
 echo "🔄 Starting database fix..."
 
-# Clean Prisma
+# Clean previous Prisma state
 rm -rf node_modules/.prisma
+rm -rf prisma/migrations/*.md
 
-# Install dependencies
-npm install prisma @prisma/client
+# Reinstall dependencies
+npm install @prisma/client @next-auth/prisma-adapter
+npm install prisma --save-dev
 
-# Run the fix
-npx prisma migrate reset --force
+# Generate Prisma client
 npx prisma generate
-npx prisma db push --accept-data-loss
 
-echo "✅ Done! Database should be fixed."
+# Apply migrations
+npx prisma migrate reset --force
+
+echo "✨ Done! Database should be fixed."
