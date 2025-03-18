@@ -1,4 +1,7 @@
-// ===== Save this exactly as shown =====
+// This is your Prisma schema file
+// Timestamp: 2025-03-18 23:02:51 UTC
+// Location: /opt/render/project/src/prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -40,12 +43,12 @@ model User {
   email         String?       @unique
   emailVerified DateTime?
   image         String?
+  usageCredits  Int          @default(10)
+  lastReset     DateTime     @default(now())
   accounts      Account[]
   sessions      Session[]
   analyses      Analysis[]
   coverLetters  CoverLetter[]
-  usageCredits  Int          @default(10)
-  lastReset     DateTime     @default(now())
 }
 
 model VerificationToken {
