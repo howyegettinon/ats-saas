@@ -1,91 +1,141 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { prisma } from '@/lib/prisma'
-import { authOptions } from '@/lib/auth' // Updated import path
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '../auth/[...nextauth]/route';
+import prisma from '@/lib/prisma';
+import { rateLimit } from '@/lib/rate-limit';
+import { NextRequest } from 'next/server';
 
-export async function GET(req: Request) {
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+const rateLimiter = rateLimit({
+  interval: 60 * 1000, // 60 seconds
+  uniqueTokenPerInterval: 500,
+});
+
+export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // Rate limiting
+    try {
+      await rateLimiter.check(req, 10, 'CACHE_TOKEN');
+    } catch {
+      return new Response('Too Many Requests', { status: 429 });
     }
 
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.email) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    // Get user with their analyses and cover letters
     const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { 
+        email: session.user.email 
+      },
       include: {
         analyses: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
+          orderBy: {
+            createdAt: 'desc'
+          },
+          select: {
+            id: true,
+            resume: true,
+            result: true,
+            createdAt: true,
+          }
         },
         coverLetters: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
+          orderBy: {
+            createdAt: 'desc'
+          },
+          select: {
+            id: true,
+            jobDescription: true,
+            resume: true,
+            result: true,
+            createdAt: true,
+          }
         },
       },
-    })
-
-    return NextResponse.json({
-      analyses: user?.analyses || [],
-      coverLetters: user?.coverLetters || [],
-    })
-
-  } catch (error: any) {
-    console.error('History error:', error)
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const body = await req.json()
-    const { type, data } = body
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return new Response('User not found', { status: 404 });
     }
 
-    if (type === 'analysis') {
-      const analysis = await prisma.analysis.create({
-        data: {
-          userId: user.id,
-          resume: data.resume,
-          result: data.result,
-        },
-      })
-      return NextResponse.json(analysis)
-    }
+    // Process the analyses results
+    const processedAnalyses = user.analyses.map(analysis => ({
+      ...analysis,
+      resume: analysis.resume.substring(0, 100) + '...',
+      result: JSON.parse(analysis.result),
+      createdAt: analysis.createdAt.toISOString(),
+    }));
 
-    if (type === 'coverLetter') {
-      const coverLetter = await prisma.coverLetter.create({
-        data: {
-          userId: user.id,
-          jobDescription: data.jobDescription,
-          resume: data.resume,
-          result: data.result,
-        },
-      })
-      return NextResponse.json(coverLetter)
-    }
+    // Process the cover letter results
+    const processedCoverLetters = user.coverLetters.map(letter => ({
+      ...letter,
+      jobDescription: letter.jobDescription.substring(0, 100) + '...',
+      resume: letter.resume.substring(0, 100) + '...',
+      result: letter.result,
+      createdAt: letter.createdAt.toISOString(),
+    }));
 
-    return NextResponse.json({ error: 'Invalid type' }, { status: 400 })
+    // Error handling for malformed results
+    const sanitizedAnalyses = processedAnalyses.map(analysis => {
+      try {
+        return {
+          ...analysis,
+          result: typeof analysis.result === 'string' 
+            ? JSON.parse(analysis.result) 
+            : analysis.result
+        };
+      } catch (e) {
+        console.error('Error parsing analysis result:', e);
+        return {
+          ...analysis,
+          result: { error: 'Could not parse result' }
+        };
+      }
+    });
 
-  } catch (error: any) {
-    console.error('Save history error:', error)
-    return NextResponse.json(
-      { error: error.message },
-      { status: 500 }
-    )
+    const sanitizedCoverLetters = processedCoverLetters.map(letter => {
+      try {
+        return {
+          ...letter,
+          result: typeof letter.result === 'string' 
+            ? letter.result 
+            : JSON.stringify(letter.result)
+        };
+      } catch (e) {
+        console.error('Error processing cover letter result:', e);
+        return {
+          ...letter,
+          result: 'Error processing result'
+        };
+      }
+    });
+
+    return new Response(JSON.stringify({
+      analyses: sanitizedAnalyses,
+      coverLetters: sanitizedCoverLetters,
+    }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, must-revalidate',
+      },
+    });
+
+  } catch (error) {
+    console.error('History fetch error:', error);
+    return new Response(JSON.stringify({ 
+      error: 'Internal Server Error',
+      details: process.env.NODE_ENV === 'development' ? error : undefined
+    }), { 
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
 }
