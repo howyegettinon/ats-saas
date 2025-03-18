@@ -40,10 +40,10 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  analyses      Analysis[]    // Added for CV analysis history
-  coverLetters  CoverLetter[] // Added for cover letter history
-  usageCredits  Int           @default(10) // Added for usage tracking
-  lastReset     DateTime      @default(now()) // Added for credit reset tracking
+  analyses      Analysis[]
+  coverLetters  CoverLetter[]
+  usageCredits  Int          @default(10)
+  lastReset     DateTime     @default(now())
 }
 
 model VerificationToken {
