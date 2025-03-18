@@ -4,11 +4,9 @@
     "scripts": {
         "dev": "next dev",
         "build": "prisma generate && prisma migrate deploy && next build",
-        "prestart": "prisma migrate deploy",
-        "start": "next start",
-        "postinstall": "prisma generate",
+        "start": "node .next/standalone/server.js",
         "prisma:generate": "prisma generate",
-        "prisma:migrate": "prisma migrate dev"
+        "prisma:migrate": "prisma migrate deploy"
     },
     "dependencies": {
         "@heroicons/react": "^2.2.0",
