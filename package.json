@@ -4,6 +4,7 @@
     "scripts": {
         "dev": "next dev",
         "build": "prisma generate && prisma migrate deploy && next build",
+        "prestart": "prisma migrate deploy",
         "start": "next start",
         "postinstall": "prisma generate",
         "prisma:generate": "prisma generate",
