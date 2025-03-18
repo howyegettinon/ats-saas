@@ -1,5 +1,4 @@
-// This is your Prisma schema file
-
+// ===== Save this exactly as shown =====
 generator client {
   provider = "prisma-client-js"
 }
