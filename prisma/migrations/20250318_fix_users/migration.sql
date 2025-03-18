@@ -1,4 +1,4 @@
--- CreateTable
+-- CreateMigrationsTable
 CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
     "id" VARCHAR(36) NOT NULL,
     "checksum" VARCHAR(64) NOT NULL,
@@ -11,6 +11,13 @@ CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
     CONSTRAINT "_prisma_migrations_pkey" PRIMARY KEY ("id")
 );
 
--- AddColumns
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "usageCredits" INTEGER NOT NULL DEFAULT 10;
-ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "lastReset" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+-- EnsureUserColumns
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'usageCredits') THEN
+        ALTER TABLE "User" ADD COLUMN "usageCredits" INTEGER NOT NULL DEFAULT 10;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'User' AND column_name = 'lastReset') THEN
+        ALTER TABLE "User" ADD COLUMN "lastReset" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+    END IF;
+END $$;
