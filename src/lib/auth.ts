@@ -2,7 +2,7 @@ import type { NextAuthOptions, SessionStrategy } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import EmailProvider from 'next-auth/providers/email';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import { prisma } from './prisma';
+import prisma from './prisma';
 
 export const authOptions: NextAuthOptions = {
   providers: [
