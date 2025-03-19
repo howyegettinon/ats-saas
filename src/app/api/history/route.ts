@@ -22,11 +22,12 @@ function getRateLimitResponse() {
 
 function cleanupOldEntries() {
   const now = Date.now();
-  for (const [key, value] of requestCounts.entries()) {
+  // Fix for TypeScript target compatibility
+  Array.from(requestCounts.entries()).forEach(([key, value]) => {
     if (now > value.resetTime) {
       requestCounts.delete(key);
     }
-  }
+  });
 }
 
 function checkRateLimit(ip: string): boolean {
